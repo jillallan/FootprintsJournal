@@ -9,58 +9,22 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var entries: [Entry]
+    @State private var selectedTab: Int = 0
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(entries) { item in
-                    NavigationLink {
-                        Text("Entry at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView(selection: $selectedTab) {
+            Tab("Journal", systemImage: "book", value: 0) {
+                EntryView()
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Entry", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newEntry = Entry(title: "A new entry", content: "Today I ...", timestamp: Date.now)
-            modelContext.insert(newEntry)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(entries[index])
+            Tab("Settings", systemImage: "gear", value: 1) {
+                SettingsView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
     }
 }
 
-#Preview {
+#Preview(traits: .modifier(SampleData())) {
     ContentView()
         .modelContainer(for: Entry.self, inMemory: true)
 }
