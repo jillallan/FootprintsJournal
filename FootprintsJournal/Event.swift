@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Event {
+struct Event: Identifiable {
+    let id = UUID()
     let title: String
     let location: String
     let startDate: Date
