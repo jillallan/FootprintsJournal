@@ -27,6 +27,7 @@
 		780014222E687B4A00C6E648 /* FootprintsJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FootprintsJournal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		780014332E687B4B00C6E648 /* FootprintsJournalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FootprintsJournalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7800143D2E687B4B00C6E648 /* FootprintsJournalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FootprintsJournalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		78AB7DB72E69AC8900E2D9DE /* FootprintsPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = FootprintsPlayground.playground; path = ../FootprintsPlayground.playground; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,6 +89,7 @@
 		780014192E687B4A00C6E648 = {
 			isa = PBXGroup;
 			children = (
+				78AB7DB72E69AC8900E2D9DE /* FootprintsPlayground.playground */,
 				780014242E687B4A00C6E648 /* FootprintsJournal */,
 				780014362E687B4B00C6E648 /* FootprintsJournalTests */,
 				780014402E687B4B00C6E648 /* FootprintsJournalUITests */,
@@ -309,6 +311,7 @@
 				INFOPLIST_FILE = FootprintsJournal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Footprints;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "the app needs access to make entries from calendar events";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -367,6 +370,7 @@
 				INFOPLIST_FILE = FootprintsJournal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Footprints;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "the app needs access to make entries from calendar events";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
