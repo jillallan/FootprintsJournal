@@ -17,4 +17,8 @@ protocol LocationProtocol: AnyObject {
     static func locationServicesEnabled() -> Bool
     func startMonitoringVisits()
     func startUpdatingLocation()
+    func startMonitoringSignificantLocationChanges()
+    func stopMonitoringVisits()
+    func stopUpdatingLocation()
+    func stopMonitoringSignificantLocationChanges()
 }

@@ -312,6 +312,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Footprints;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "the app needs access to make entries from calendar events";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "the app needs access to make entries from calendar events";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -371,6 +375,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Footprints;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "the app needs access to make entries from calendar events";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationUsageDescription = "The app uses location data to create entries";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "the app needs access to make entries from calendar events";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

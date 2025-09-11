@@ -8,29 +8,32 @@
 import CoreLocation
 import Foundation
 import SwiftData
+import SwiftUI
 
+@Observable
 @MainActor
 class LocationService: NSObject {
     var locationManager: LocationProtocol
-    var visits: [Visit] = []
-    var locations: [Visit] = []
-    private var authorizationContinuation: CheckedContinuation<Bool, Never>?
+    private let persister: Persistable
+//    var visits: [Visit] = []
+//    var locations: [Location] = []
     
-    
-    init(
-        locationManager: any LocationProtocol = CLLocationManager()
+    init(locationManager: any LocationProtocol = CLLocationManager(),
+         persister: Persistable
     ) {
         self.locationManager = locationManager
+        self.persister = persister
         super.init()
         locationManager.delegate = self
+        
     }
     
-    func verifyAuthorizationStatus() async throws -> Bool {
+    func verifyAuthorizationStatus() throws -> Bool {
         let status = locationManager.authorizationStatus
         
         switch status {
             case .notDetermined:
-                return await requestAlwaysAuthorization()
+                return false
             case .restricted:
                 throw LocationError.restricted
             case .denied:
@@ -43,43 +46,26 @@ class LocationService: NSObject {
                 throw LocationError.unknown
         }
     }
-
-    func requestAlwaysAuthorization() async -> Bool {
-        // If location services are disabled at the system level, nothing to request.
-        guard type(of: locationManager).locationServicesEnabled() else {
-            return false
-        }
-        
-        // If already determined, return immediately.
-        switch locationManager.authorizationStatus {
-            case .authorizedAlways:
-                return true
-            case .denied, .restricted:
-                return false
-            case .authorizedWhenInUse, .notDetermined:
-                break
-            @unknown default:
-                return false
-        }
-        
-        // Suspend and wait for delegate callback.
-        return await withCheckedContinuation { continuation in
-            self.authorizationContinuation = continuation
-            // Qualify with the instance to fix “Cannot find 'requestAlwaysAuthorization' in scope”
-            self.locationManager.requestAlwaysAuthorization()
-        }
-        
-    }
     
-    func startMonitoringVisits() {
+    func enableLocationFeatures() {
         locationManager.startMonitoringVisits()
+        locationManager.startMonitoringSignificantLocationChanges()
     }
     
-    func startLocationServices() {
-        locationManager.startUpdatingLocation()
+    func disableLocationFeatures() {
+        locationManager.stopMonitoringVisits()
+        locationManager.stopMonitoringSignificantLocationChanges()
     }
-
     
+    func handleNewCLLocation(_ clLocation: CLLocation) {
+        let location = Location(clLocation: clLocation)
+        persister.save(location)
+    }
+    
+    func handleNewVisit(_ clVisit: CLVisit) {
+        let visit = Visit(clVisit: clVisit)
+        persister.save(visit)
+    }
 }
 
 extension LocationService: CLLocationManagerDelegate {
@@ -91,18 +77,24 @@ extension LocationService: CLLocationManagerDelegate {
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        guard let continuation = authorizationContinuation else { return }
+        print("Did change authorisation")
         switch manager.authorizationStatus {
-            case .authorizedAlways:
-                continuation.resume(returning: true)
-            case .authorizedWhenInUse, .denied, .restricted:
-                continuation.resume(returning: false)
-            case .notDetermined:
-                return // still waiting
-            @unknown default:
-                continuation.resume(returning: false)
+            case .authorizedWhenInUse, .authorizedAlways:  // Location services are available.
+                print("Authorisation granted")
+                enableLocationFeatures()
+                break
+                
+            case .restricted, .denied:  // Location services currently unavailable.
+                disableLocationFeatures()
+                break
+                
+            case .notDetermined:        // Authorization not determined yet.
+                manager.requestAlwaysAuthorization()
+                break
+                
+            default:
+                break
         }
-        authorizationContinuation = nil
     }
     
     func locationManager(
@@ -110,13 +102,7 @@ extension LocationService: CLLocationManagerDelegate {
         didVisit visit: CLVisit
     ) {
         print(visit.debugDescription)
-        let newVisit = Visit(
-            startDate: visit.arrivalDate,
-            endDate: visit.departureDate,
-//            location: visit.coordinate
-        )
-        visits.append(newVisit)
-//        dataManager.modelContext.insert(newVisit)
+        handleNewVisit(visit)
     }
     
     func locationManager(
@@ -124,6 +110,9 @@ extension LocationService: CLLocationManagerDelegate {
         didUpdateLocations locations: [CLLocation]
     ) {
         print(locations.first!.debugDescription)
+        if let location = locations.first {
+            handleNewCLLocation(location)
+        }
     }
 }
 

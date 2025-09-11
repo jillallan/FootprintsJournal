@@ -10,19 +10,39 @@ import Foundation
 import SwiftData
 
 @Model
-class Visit {
+class Visit: CustomDebugStringConvertible {
     var startDate: Date
     var endDate: Date
-//    var location: CLLocationCoordinate2D
+    var latitude: Double
+    var longitude: Double
     
-    init(startDate: Date, endDate: Date) {
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+    
+    var debugDescription: String {
+        """
+        Location:
+          startDate: \(startDate)
+          arrivalDate: \(endDate)
+          latitude: \(latitude)
+          longitude: \(longitude)
+        """
+    }
+    
+    init(startDate: Date, endDate: Date, latitude: Double, longitude: Double) {
         self.startDate = startDate
         self.endDate = endDate
-//        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
     }
     
     convenience init(clVisit: CLVisit) {
-        self.init(startDate: clVisit.arrivalDate, endDate: clVisit.departureDate)
-//        self.location = clVisit.coordinate
+        self.init(
+            startDate: clVisit.arrivalDate,
+            endDate: clVisit.departureDate,
+            latitude: clVisit.coordinate.latitude,
+            longitude: clVisit.coordinate.longitude
+        )
     }
 }
