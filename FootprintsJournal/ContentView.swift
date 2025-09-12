@@ -9,8 +9,16 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+//    @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: Int = 0
     let eventService = EventService()
+    
+//    private var locationService: LocationService {
+//        // Grab the container from the current context
+//        let container = modelContext.container
+//        let repo = PersistenceController(modelContainer: container)
+//        return LocationService(persister: repo)
+//    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -20,8 +28,11 @@ struct ContentView: View {
             Tab("Events", systemImage: "calendar", value: 1) {
                 EventView()
             }
-            Tab("Settings", systemImage: "gear", value: 1) {
-                SettingsView()
+            Tab("Locations", systemImage: "map", value: 2) {
+                LocationView()
+            }
+            Tab("Visits", systemImage: "map", value: 3) {
+                VisitView()
             }
         }
         .tabViewStyle(.sidebarAdaptable)

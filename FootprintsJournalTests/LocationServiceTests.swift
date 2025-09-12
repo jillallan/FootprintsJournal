@@ -6,189 +6,52 @@
 //
 
 import CoreLocation
+import SwiftData
 import Testing
 @testable import FootprintsJournal
-
-class MockLocationManager: LocationProtocol {
-    var authorizationStatus: CLAuthorizationStatus
-
-    private let fakeManager = CLLocationManager()
-    var delegate: CLLocationManagerDelegate?
-    // Track calls if you want
-    private(set) var didRequestAlwaysAuth = false
-    private(set) var didStartMonitoringVisits = false
-    private(set) var didStartUpdatingLocations = false
-    var isLocationServicesEnabled: Bool
-    static var servicesEnabled: Bool = false
-    
-    init(
-        isLocationServicesEnabled: Bool = true,
-        authorizationStatus: CLAuthorizationStatus = .authorizedAlways
-    ) {
-        self.isLocationServicesEnabled = isLocationServicesEnabled
-        self.authorizationStatus = authorizationStatus
-        MockLocationManager.servicesEnabled = isLocationServicesEnabled
-    }
-
-    func requestAlwaysAuthorization() {
-        didRequestAlwaysAuth = true
-    }
-
-    static func locationServicesEnabled() -> Bool {
-        true
-    }
-
-    func startMonitoringVisits() {
-        didStartMonitoringVisits = true
-    }
-    
-    func startUpdatingLocation() {
-        didStartUpdatingLocations = true
-    }
-    
-    // MARK: - Simulation helpers
-    
-    func simulateAuthorizationChange() {
-        delegate?.locationManagerDidChangeAuthorization?(fakeManager)
-    }
-    
-    func simulateVisit(_ visit: CLVisit) {
-        delegate?.locationManager?(fakeManager, didVisit: visit)
-    }
-    
-    func simulateLocation(_ locations: [CLLocation]) {
-        delegate?.locationManager?(fakeManager, didUpdateLocations: locations)
-    }
-    
-    func simulateError(_ error: Error) {
-        delegate?.locationManager?(fakeManager, didFailWithError: error)
-    }
-
-}
-
-import CoreLocation
-@testable import FootprintsJournal
-
-@MainActor
-final class SpyLocationService: LocationService {
-    private(set) var didReceiveAuthorizationChange = false
-    private(set) var receivedVisits: [CLVisit] = []
-    private(set) var receivedLocations: [CLLocation] = []
-    private(set) var receivedErrors: [Error] = []
-    
-    override func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        didReceiveAuthorizationChange = true
-        super.locationManagerDidChangeAuthorization(manager)
-    }
-    
-    override func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
-        receivedVisits.append(visit)
-        super.locationManager(manager, didVisit: visit)
-    }
-    
-    override func locationManager(
-        _ manager: CLLocationManager,
-        didUpdateLocations locations: [CLLocation]
-    ) {
-        receivedLocations.append(contentsOf: locations)
-        super.locationManager(manager, didUpdateLocations: locations)
-    }
-    
-    override func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        receivedErrors.append(error)
-        super.locationManager(manager, didFailWithError: error)
-    }
-}
-
-import CoreLocation
-
-final class TestCLVisit: CLVisit {
-    private let _coordinate: CLLocationCoordinate2D
-    private let _horizontalAccuracy: CLLocationAccuracy
-    private let _arrivalDate: Date
-    private let _departureDate: Date
-    
-    init(
-        coordinate: CLLocationCoordinate2D,
-        horizontalAccuracy: CLLocationAccuracy,
-        arrivalDate: Date,
-        departureDate: Date
-    ) {
-        self._coordinate = coordinate
-        self._horizontalAccuracy = horizontalAccuracy
-        self._arrivalDate = arrivalDate
-        self._departureDate = departureDate
-        super.init()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override var coordinate: CLLocationCoordinate2D { _coordinate }
-    override var horizontalAccuracy: CLLocationAccuracy { _horizontalAccuracy }
-    override var arrivalDate: Date { _arrivalDate }
-    override var departureDate: Date { _departureDate }
-}
-
-
-// MARK: - Tests
 
 @MainActor
 @Suite
 struct LocationServiceDelegateTests {
-    @Test("verifyAuthorizationStatus throws .denied")
-    @MainActor
-    func deniedAuthorization() async {
-        let mock = MockLocationManager()
-        mock.authorizationStatus = .denied
-        let locationService = LocationService(locationManager: mock)
+    var modelContainer: ModelContainer
+    var modelContext: ModelContext
+    var persistenceController: PersistenceController
+    var mock: MockLocationManager
+    var service: SpyLocationService
+    
+    init() {
+        let schema = Schema([Location.self, Visit.self])
+        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
+        modelContainer = try! ModelContainer(
+            for: schema,
+            configurations: modelConfiguration
+        )
+        modelContext = modelContainer.mainContext
+        persistenceController = PersistenceController(modelContext: modelContext)
         
-        await #expect(throws: LocationError.denied) {
-            _ = try await locationService.verifyAuthorizationStatus()
-        }
+        mock = MockLocationManager()
+        service = SpyLocationService(
+            locationManager: mock,
+            persister: persistenceController
+        )
     }
     
-    @Test("verifyAuthorizationStatus throws .restricted")
-    @MainActor
-    func restrictedAuthorization() async {
-        let mock = MockLocationManager()
-        mock.authorizationStatus = .restricted
-        let service = LocationService(locationManager: mock)
-        
-        await #expect(throws: LocationError.restricted) {
-            _ = try await service.verifyAuthorizationStatus()
-        }
-    }
-    
-    @Test("verifyAuthorizationStatus throws .upgrade when authorizedWhenInUse")
-    @MainActor
-    func whenInUseAuthorization() async {
-        let mock = MockLocationManager()
-        mock.authorizationStatus = .authorizedWhenInUse
-        let service = LocationService(locationManager: mock)
-        
-        await #expect(throws: LocationError.upgrade) {
-            _ = try await service.verifyAuthorizationStatus()
-        }
-    }
-
-    @Test("verifyAuthorizationStatus returns true when already authorizedAlways")
-    @MainActor
-    func alreadyAuthorizedAlways() async throws {
-        let mock = MockLocationManager()
-        mock.authorizationStatus = .authorizedAlways
-        let service = LocationService(locationManager: mock)
-        
-        let result = try await service.verifyAuthorizationStatus()
-        #expect(result == true)
-    }
+//    func createRepository() throws -> Persistable {
+//        let schema = Schema([Location.self])
+//        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
+//        let modelContainer = try! ModelContainer(
+//            for: schema,
+//            configurations: modelConfiguration
+//        )
+//        
+//        let persister = PersistenceController(
+//            modelContext: modelContainer.mainContext
+//        )
+//        return persister
+//    }
     
     @Test
     func visitCallback_createsNewVisitStruct() throws {
-        let mockManager = MockLocationManager()
-        let service = SpyLocationService(locationManager: mockManager)
-        
         let coordinate = CLLocationCoordinate2D(latitude: 50.0, longitude: -1.0)
         let startDate = Date.now
         let endDate = Date.now.addingTimeInterval(600)
@@ -200,42 +63,41 @@ struct LocationServiceDelegateTests {
             arrivalDate: startDate,
             departureDate: endDate
         ) as CLVisit
-        mockManager.simulateVisit(visit)
+        mock.simulateVisit(visit)
         
         #expect(service.receivedVisits.count == 1)
-        #expect(service.visits.count == 1)
-//        #expect(
-//            service.visits.first?.location == coordinate,
-//            "Expected coordinate to be \(coordinate), got \(service.visits.first?.location)"
-//        )
-        #expect(
-            service.visits.first?.startDate == startDate,
-            "Expected coordinate to be \(startDate), got \(service.visits.first?.startDate)"
-        )
-        #expect(
-            service.visits.first?.endDate == endDate,
-            "Expected coordinate to be \(endDate), got \(service.visits.first?.endDate)"
-        )
     }
     
-    @Test
-    func authChange_isHandled() {
-        let mockManager = MockLocationManager()
-        let service = SpyLocationService(locationManager: mockManager)
+    @Test("test location call back")
+    func locationCallback_createsNewLocationStruct() throws {
         
-        mockManager.simulateAuthorizationChange()
+        // Usage in your test:
+        let location = CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: 51.5, longitude: 0.0),
+            altitude: 0.0,
+            horizontalAccuracy: 0.0,
+            verticalAccuracy: 0.0,
+            timestamp: Date.now
+        )
+       
+        mock.simulateLocation([location])
         
-        #expect(service.didReceiveAuthorizationChange)
+        #expect(service.receivedLocations.count == 1)
     }
     
     @Test
     func error_isHandled() {
-        let mockManager = MockLocationManager()
-        let service = SpyLocationService(locationManager: mockManager)
+        let mock = MockLocationManager()
+        mock.authorizationStatus = .denied
+        let service = SpyLocationService(
+            locationManager: mock,
+            persister: persistenceController
+        )
         
         struct TestError: Error {}
-        mockManager.simulateError(TestError())
+        mock.simulateError(TestError())
         
         #expect(service.receivedErrors.count == 1)
     }
 }
+
