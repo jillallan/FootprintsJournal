@@ -121,6 +121,4 @@ extension LocationService: CLLocationManagerDelegate {
     }
 }
 
-
-
 extension CLLocationManager: LocationProtocol { }

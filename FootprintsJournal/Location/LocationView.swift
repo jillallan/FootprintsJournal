@@ -21,7 +21,7 @@ struct LocationView: View {
         NavigationStack {
             List {
                 ForEach(locations) { location in
-                    Text(location.debugDescription)
+                    LocationRowView(location: location)
                 }
             }
             .navigationTitle("Locations")
@@ -59,5 +59,6 @@ struct LocationView: View {
 
 #Preview {
     LocationView()
+        
 }
 
