@@ -25,6 +25,7 @@ class LocationService: NSObject {
         self.persister = persister
         super.init()
         locationManager.delegate = self
+        locationManager.allowsBackgroundLocationUpdates = true
         
     }
     
@@ -59,7 +60,11 @@ class LocationService: NSObject {
     
     func handleNewCLLocation(_ clLocation: CLLocation) {
         let location = Location(clLocation: clLocation)
-        persister.save(location)
+        do {
+            try persister.save(location)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
     func handleNewVisit(_ clVisit: CLVisit) {

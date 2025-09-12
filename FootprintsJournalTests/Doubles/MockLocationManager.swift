@@ -10,6 +10,7 @@ import CoreLocation
 @testable import FootprintsJournal
 
 class MockLocationManager: LocationProtocol {
+    var allowsBackgroundLocationUpdates: Bool
     var authorizationStatus: CLAuthorizationStatus
     
     private let fakeManager = CLLocationManager()
@@ -24,10 +25,12 @@ class MockLocationManager: LocationProtocol {
     
     init(
         isLocationServicesEnabled: Bool = true,
-        authorizationStatus: CLAuthorizationStatus = .authorizedAlways
+        authorizationStatus: CLAuthorizationStatus = .authorizedAlways,
+        allowsBackgroundLocationUpdates: Bool = true
     ) {
         self.isLocationServicesEnabled = isLocationServicesEnabled
         self.authorizationStatus = authorizationStatus
+        self.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
         MockLocationManager.servicesEnabled = isLocationServicesEnabled
     }
     
@@ -63,6 +66,10 @@ class MockLocationManager: LocationProtocol {
         didStartMonitoringSignificantLocationChanges = true
     }
     // MARK: - Simulation helpers
+    
+//    func simulateAuthorizationChange() {
+//        delegate?.locationManagerDidChangeAuthorization?(fakeManager)
+//    }
     
     func simulateAuthorizationChange() {
         delegate?.locationManagerDidChangeAuthorization?(fakeManager)

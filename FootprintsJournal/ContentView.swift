@@ -16,7 +16,7 @@ struct ContentView: View {
 //    private var locationService: LocationService {
 //        // Grab the container from the current context
 //        let container = modelContext.container
-//        let repo = Repository(modelContainer: container)
+//        let repo = PersistenceController(modelContainer: container)
 //        return LocationService(persister: repo)
 //    }
 

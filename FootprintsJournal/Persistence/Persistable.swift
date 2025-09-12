@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol Persistable: Sendable {
+@MainActor
+protocol Persistable {
     func save(_ location: Location)
     func save(_ visit: Visit)
     // add more as needed (delete, update, etc.)

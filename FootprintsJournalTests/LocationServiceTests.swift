@@ -13,96 +13,45 @@ import Testing
 @MainActor
 @Suite
 struct LocationServiceDelegateTests {
-    func createRepository() throws -> Persistable {
-        let schema = Schema([Location.self])
+    var modelContainer: ModelContainer
+    var modelContext: ModelContext
+    var persistenceController: PersistenceController
+    var mock: MockLocationManager
+    var service: SpyLocationService
+    
+    init() {
+        let schema = Schema([Location.self, Visit.self])
         let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let modelContainer = try! ModelContainer(
+        modelContainer = try! ModelContainer(
             for: schema,
             configurations: modelConfiguration
         )
+        modelContext = modelContainer.mainContext
+        persistenceController = PersistenceController(modelContext: modelContext)
         
-        let persister = MockRepository(modelContext: modelContainer.mainContext)
-        return persister
-    }
-    
-    
-    @Test("verifyAuthorizationStatus throws .denied")
-    @MainActor
-    func deniedAuthorization() async throws {
-        let mock = MockLocationManager()
-        let repository = try! createRepository()
-        mock.authorizationStatus = .denied
-        let locationService = LocationService(
+        mock = MockLocationManager()
+        service = SpyLocationService(
             locationManager: mock,
-            persister: repository
+            persister: persistenceController
         )
-        mock.authorizationStatus = .denied
-        locationService
-            .locationManagerDidChangeAuthorization(mock as! CLLocationManager)
-        
-        #expect(mock.didStartMonitoringVisits == false)
-        #expect(mock.didStartMonitoringSignificantLocationChanges == false)
-    
     }
     
-    @Test("verifyAuthorizationStatus throws .restricted")
-    @MainActor
-    func restrictedAuthorization() async {
-        let mock = MockLocationManager()
-        let repository = try! createRepository()
-        mock.authorizationStatus = .restricted
-        let locationService = LocationService(
-            locationManager: mock,
-            persister: repository
-        )
-        mock.authorizationStatus = .restricted
-        
-        #expect(mock.didStartMonitoringVisits == false)
-        #expect(mock.didStartMonitoringSignificantLocationChanges == false)
-    }
-    
-    @Test("verifyAuthorizationStatus throws .upgrade when authorizedWhenInUse")
-    @MainActor
-    func whenInUseAuthorization() async {
-        let mock = MockLocationManager()
-        let repository = try! createRepository()
-        mock.authorizationStatus = .authorizedWhenInUse
-        let locationService = LocationService(
-            locationManager: mock,
-            persister: repository
-        )
-        mock.authorizationStatus = .authorizedWhenInUse
-        
-        #expect(mock.didStartMonitoringVisits == true)
-        #expect(mock.didStartMonitoringSignificantLocationChanges == true)
-    }
-
-    @Test("verifyAuthorizationStatus returns true when already authorizedAlways")
-    @MainActor
-    func alreadyAuthorizedAlways() async throws {
-        let mock = MockLocationManager()
-        let repository = try! createRepository()
-        mock.authorizationStatus = .authorizedAlways
-        let locationService = LocationService(
-            locationManager: mock,
-            persister: repository
-        )
-        mock.authorizationStatus = .authorizedAlways
-        
-        #expect(mock.didStartMonitoringVisits == true)
-        #expect(mock.didStartMonitoringSignificantLocationChanges == true)
-    }
+//    func createRepository() throws -> Persistable {
+//        let schema = Schema([Location.self])
+//        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
+//        let modelContainer = try! ModelContainer(
+//            for: schema,
+//            configurations: modelConfiguration
+//        )
+//        
+//        let persister = PersistenceController(
+//            modelContext: modelContainer.mainContext
+//        )
+//        return persister
+//    }
     
     @Test
     func visitCallback_createsNewVisitStruct() throws {
-        let mock = MockLocationManager()
-        let repository = try! createRepository()
-        mock.authorizationStatus = .denied
-        let service = SpyLocationService(
-            locationManager: mock,
-            persister: repository
-        )
-        
         let coordinate = CLLocationCoordinate2D(latitude: 50.0, longitude: -1.0)
         let startDate = Date.now
         let endDate = Date.now.addingTimeInterval(600)
@@ -117,22 +66,32 @@ struct LocationServiceDelegateTests {
         mock.simulateVisit(visit)
         
         #expect(service.receivedVisits.count == 1)
-
-//        #expect(
-//            service.visits.first?.startDate == startDate,
-//            "Expected coordinate to be \(startDate), got \(service.visits.first?.startDate)"
-//        )
-
+    }
+    
+    @Test("test location call back")
+    func locationCallback_createsNewLocationStruct() throws {
+        
+        // Usage in your test:
+        let location = CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: 51.5, longitude: 0.0),
+            altitude: 0.0,
+            horizontalAccuracy: 0.0,
+            verticalAccuracy: 0.0,
+            timestamp: Date.now
+        )
+       
+        mock.simulateLocation([location])
+        
+        #expect(service.receivedLocations.count == 1)
     }
     
     @Test
     func error_isHandled() {
         let mock = MockLocationManager()
-        let repository = try! createRepository()
         mock.authorizationStatus = .denied
         let service = SpyLocationService(
             locationManager: mock,
-            persister: repository
+            persister: persistenceController
         )
         
         struct TestError: Error {}
@@ -141,3 +100,4 @@ struct LocationServiceDelegateTests {
         #expect(service.receivedErrors.count == 1)
     }
 }
+

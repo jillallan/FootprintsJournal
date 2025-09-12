@@ -39,7 +39,7 @@ struct LocationView: View {
             }
 //            .onAppear {
 //                
-//                let locationRepository = Repository(
+//                let locationRepository = PersistenceController(
 //                    modelContext: modelContext
 //                )
 //                locationService = LocationService(persister: locationRepository)
