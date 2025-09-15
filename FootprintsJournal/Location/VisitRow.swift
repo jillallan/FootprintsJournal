@@ -1,16 +1,16 @@
 //
-//  LocationRowView.swift
+//  VisitRow.swift
 //  FootprintsJournal
 //
-//  Created by Jill Allan on 12/09/2025.
+//  Created by Jill Allan on 15/09/2025.
 //
 
 import GeoToolbox
 import MapKit
 import SwiftUI
 
-struct LocationRowView: View {
-    let location: Location
+struct VisitRow: View {
+    let visit: Visit
     @State var mapItem: MKMapItem?
     @State var placeDescriptor: PlaceDescriptor?
     @State var title: String = "Untitled Location"
@@ -22,11 +22,16 @@ struct LocationRowView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             // Date & Time
-            Text(location.timestamp, format: Date.FormatStyle(date: .long, time: .shortened))
+            Text(
+                visit.startDate,
+                format: Date.FormatStyle(date: .long, time: .shortened)
+            )
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             // Coordinates subtitle
-            Text("Lat: \(String(format: "%.5f", location.latitude)), Lng: \(String(format: "%.5f", location.longitude))")
+            Text(
+                "Lat: \(String(format: "%.5f", visit.latitude)), Lng: \(String(format: "%.5f", visit.longitude))"
+            )
                 .font(.caption)
                 .foregroundStyle(.secondary)
             // Map placeholder
@@ -51,13 +56,14 @@ struct LocationRowView: View {
                     )
                     .frame(height: 120)
             }
-                
+            
         }
         .padding()
         .task {
             do {
+                
                 if let request = MKReverseGeocodingRequest(
-                    location: location.location
+                    location: visit.location
                 ) {
                     let mapItems = try await request.mapItems
                     if let fetchedMapItem = mapItems.first {
@@ -93,6 +99,6 @@ struct LocationRowView: View {
     
 }
 
-#Preview(traits: .modifier(SampleData())) {
-    LocationRowView(location: .preview)
+#Preview {
+    VisitRow(visit: .preview)
 }

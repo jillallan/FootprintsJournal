@@ -60,11 +60,8 @@ class LocationService: NSObject {
     
     func handleNewCLLocation(_ clLocation: CLLocation) {
         let location = Location(clLocation: clLocation)
-        do {
-            try persister.save(location)
-        } catch {
-            print(error.localizedDescription)
-        }
+        persister.save(location)
+
     }
     
     func handleNewVisit(_ clVisit: CLVisit) {
