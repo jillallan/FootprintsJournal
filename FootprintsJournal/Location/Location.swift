@@ -84,3 +84,18 @@ class Location: CustomDebugStringConvertible {
         )
     }
 }
+
+extension Location {
+    static var preview: Location {
+        Location(
+            timestamp: Date.now,
+            latitude: 51.5,
+            longitude: 0.0,
+            horizontalAccuracy: 0.0,
+            verticalAccuracy: 0.0,
+            altitude: 0.0,
+            course: 0.0,
+            speed: 0.0
+        )
+    }
+}

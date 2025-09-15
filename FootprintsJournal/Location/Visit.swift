@@ -20,6 +20,10 @@ class Visit: CustomDebugStringConvertible {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
     
+    var location: CLLocation {
+        CLLocation(latitude: latitude, longitude: longitude)
+    }
+    
     var debugDescription: String {
         """
         Location:
@@ -43,6 +47,17 @@ class Visit: CustomDebugStringConvertible {
             endDate: clVisit.departureDate,
             latitude: clVisit.coordinate.latitude,
             longitude: clVisit.coordinate.longitude
+        )
+    }
+}
+
+extension Visit {
+    static var preview: Visit {
+        Visit(
+            startDate: .distantPast,
+            endDate: .distantFuture,
+            latitude: 0.0,
+            longitude: 0.0
         )
     }
 }

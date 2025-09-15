@@ -34,6 +34,9 @@ struct ContentView: View {
             Tab("Visits", systemImage: "map", value: 3) {
                 VisitView()
             }
+            Tab("Calendar", systemImage: "map", value: 3) {
+                InfiniteCalendarView()
+            }
         }
         .tabViewStyle(.sidebarAdaptable)
     }
