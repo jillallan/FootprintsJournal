@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-struct InfiniteCalendarView: View {
+struct CalendarView: View {
+    @State var currentDate: Date = Date.now
     private let baseDate: Date = Date.now
     // Sliding window of month offsets (e.g., -18...+18)
+    @State var selectedDate: Date? = nil
     @State private var monthWindow: ClosedRange<Int>
-    @State private var anchorMonth: Int? // scroll anchor (offset id)
+    @State private var scrollPositionId: Int? // scroll anchor (offset id)
     
     private let chunkSize = 12         // grow by 12 months per edge reach
     private let keepAround = 36        // keep +/- 18 months total
@@ -29,25 +31,29 @@ struct InfiniteCalendarView: View {
         df.dateFormat = "LLLL yyyy"
         return df
     }()
-
+    
     
     // MARK: Init
     init() {
         let half = 18
         _monthWindow = .init(initialValue: (-half)...(+half))
-        _anchorMonth = .init(initialValue: 18)
+        _scrollPositionId = .init(initialValue: 18)
         
     }
     
-    public var body: some View {
+    var body: some View {
+        
         NavigationStack {
-            
+            let _ = print(String(describing: scrollPositionId))
             ScrollView {
                 LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
                     ForEach(Array(monthWindow), id: \.self) { monthOffset in
                         Section {
                             MonthGrid(
-                                month: monthDate(for: monthOffset),
+                                selectedDate: $selectedDate,
+                                month: monthDate(
+                                    for: monthOffset
+                                ),
                                 calendar: calendar
                             )
                         } header: {
@@ -65,38 +71,44 @@ struct InfiniteCalendarView: View {
                 }
             }
             // Keep the scroll position stable when trimming/expanding
-            .scrollPosition(id: $anchorMonth)
+            .scrollPosition(id: $scrollPositionId)
             .task {
                 // Small delay to let layout settle before anchoring
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                anchorMonth = 0
+                //                try? await Task.sleep(nanoseconds: 50_000_000)
+                //                anchorMonth = 0
             }
             .navigationTitle("Calendar")
+            
+        }
+        .overlay {
+            if selectedDate != nil {
+                DayView(selectedDate: $selectedDate)
+            }
         }
     }
 }
 
-extension InfiniteCalendarView {
-    static func monthsInRange(
-        start: Date, end: Date, calendar: Calendar
-    ) -> [Date] {
-        guard let startMonth = calendar.date(
-            from: calendar.dateComponents([.year, .month], from: start)
-        ),
-              let endMonth = calendar.date(
-                from: calendar.dateComponents([.year, .month], from: end)
-              ),
-              startMonth <= endMonth
-        else { return [] }
-        
-        var months: [Date] = []
-        var cursor = startMonth
-        while cursor <= endMonth {
-            months.append(cursor)
-            cursor = calendar.date(byAdding: .month, value: 1, to: cursor)!
-        }
-        return months
-    }
+extension CalendarView {
+//    static func monthsInRange(
+//        start: Date, end: Date, calendar: Calendar
+//    ) -> [Date] {
+//        guard let startMonth = calendar.date(
+//            from: calendar.dateComponents([.year, .month], from: start)
+//        ),
+//              let endMonth = calendar.date(
+//                from: calendar.dateComponents([.year, .month], from: end)
+//              ),
+//              startMonth <= endMonth
+//        else { return [] }
+//        
+//        var months: [Date] = []
+//        var cursor = startMonth
+//        while cursor <= endMonth {
+//            months.append(cursor)
+//            cursor = calendar.date(byAdding: .month, value: 1, to: cursor)!
+//        }
+//        return months
+//    }
     
     func monthDate(for offset: Int) -> Date {
         calendar
@@ -153,7 +165,7 @@ extension InfiniteCalendarView {
             let trimmedUpper = newUpper - delta
             monthWindow = trimmedLower...trimmedUpper
             // Keep the *visual* anchor by pinning to a close-by header id
-            anchorMonth = max(trimmedLower + 2, min(anchorMonth ?? 0, trimmedUpper - 2))
+            scrollPositionId = max(trimmedLower + 2, min(scrollPositionId ?? 0, trimmedUpper - 2))
         } else {
             monthWindow = newLower...newUpper
         }
@@ -162,7 +174,7 @@ extension InfiniteCalendarView {
     @MainActor
     func expandUpper() {
         let newLower = monthWindow.lowerBound
-        var newUpper = monthWindow.upperBound + chunkSize
+        let newUpper = monthWindow.upperBound + chunkSize
         
         // Trim bottom if we exceed keepAround
         let desired = (newLower...newUpper)
@@ -171,7 +183,7 @@ extension InfiniteCalendarView {
             let trimmedLower = newLower + delta
             let trimmedUpper = newUpper
             monthWindow = trimmedLower...trimmedUpper
-            anchorMonth = min(trimmedUpper - 2, max(anchorMonth ?? 0, trimmedLower + 2))
+            scrollPositionId = min(trimmedUpper - 2, max(scrollPositionId ?? 0, trimmedLower + 2))
         } else {
             monthWindow = newLower...newUpper
         }
@@ -179,5 +191,5 @@ extension InfiniteCalendarView {
 }
 
 #Preview {
-    InfiniteCalendarView()
+    CalendarView()
 }

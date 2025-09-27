@@ -16,7 +16,7 @@ struct VisitView: View {
         NavigationStack {
             List {
                 ForEach(visits) { visit in
-                    VisitRow(visit: visit)
+                    LocationRow(location: visit.location)
                 }
             }
             .navigationTitle("Visits")

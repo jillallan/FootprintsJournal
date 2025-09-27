@@ -12,13 +12,14 @@ import SwiftUI
 struct SampleData: PreviewModifier {
     static func makeSharedContext() async throws -> ModelContainer {
         // Initialize a schema with your model types. Add more types here if needed.
-        let schema = Schema([Entry.self])
+        let schema = Schema([Entry.self, Location.self, Visit.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
 
         // Insert sample data on the main actor so previews see it immediately.
         await MainActor.run {
             Entry.insertSampleData(modelContext: container.mainContext)
+            Visit.insertSampleData(modelContext: container.mainContext)
         }
 
         return container

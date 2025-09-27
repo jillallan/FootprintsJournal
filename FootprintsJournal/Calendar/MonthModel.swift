@@ -12,6 +12,8 @@ struct MonthModel {
     let numberOfDays: Int
     let leadingBlanks: Int
     let trailingBlanks: Int
+    let dates: [Date?]
+    let days: [DayObject]
     
     init(month: Date, calendar: Calendar) {
         let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
@@ -27,30 +29,30 @@ struct MonthModel {
         let totalCells = leadingBlanks + numberOfDays
         let remainder = totalCells % 7
         self.trailingBlanks = remainder == 0 ? 0 : 7 - remainder
+        
+        // Build the sequential dates for the month
+        let monthDates: [Date?] = (0..<numberOfDays).compactMap { dayOffset in
+            calendar.date(byAdding: .day, value: dayOffset, to: firstOfMonth)
+        }
+
+        // Combine leading blanks + dates + trailing blanks
+        self.dates = Array(repeating: nil, count: leadingBlanks)
+            + monthDates
+            + Array(repeating: nil, count: trailingBlanks)
+        
+        // After you've set `self.dates = ...`
+        self.days = self.dates.enumerated().map { index, date in
+            DayObject(id: index, date: date) // date is Date? so nils are preserved
+        }
+        
     }
 }
 
 #Playground {
+    let month = MonthModel(month: Date(), calendar: .current)
+    month.dates
     
-    let calendar = Calendar.current
-    guard let month = calendar.date(byAdding: .month, value: -2, to: Date.now) else {
-        return
+    month.dates.enumerated().forEach { index, date in
+        print("\(index): \(String(describing: date))")
     }
-    month
-    
-    guard let firstOfMonth = calendar.date(
-        from: calendar.dateComponents([.year, .month], from: month)
-    ) else { return }
-    firstOfMonth
-    
-    guard let range = calendar.range(
-        of: .day, in: .month, for: firstOfMonth
-    ) else { return }
-    range.count
-    
-    let firstWeekday = calendar.component(.weekday, from: firstOfMonth)
-    let leading = (firstWeekday - calendar.firstWeekday + 7) % 7
-    
-    let totalCells = leading + range.count
-    let remainder = totalCells % 7
 }

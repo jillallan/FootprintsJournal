@@ -10,7 +10,7 @@ import SwiftData
 
 struct ContentView: View {
 //    @Environment(\.modelContext) private var modelContext
-    @State private var selectedTab: Int = 0
+    @State private var selectedTab: Int = 3
     let eventService = EventService()
     
 //    private var locationService: LocationService {
@@ -28,14 +28,8 @@ struct ContentView: View {
             Tab("Events", systemImage: "calendar", value: 1) {
                 EventView()
             }
-            Tab("Locations", systemImage: "map", value: 2) {
-                LocationView()
-            }
-            Tab("Visits", systemImage: "map", value: 3) {
-                VisitView()
-            }
-            Tab("Calendar", systemImage: "map", value: 3) {
-                InfiniteCalendarView()
+            Tab("Calendar", systemImage: "map", value: 4) {
+                CalendarView()
             }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -44,5 +38,8 @@ struct ContentView: View {
 
 #Preview(traits: .modifier(SampleData())) {
     ContentView()
-        .modelContainer(for: Entry.self, inMemory: true)
+        .modelContainer(
+            for: [Entry.self, Location.self, Visit.self],
+            inMemory: true
+        )
 }

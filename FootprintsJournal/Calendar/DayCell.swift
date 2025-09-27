@@ -10,7 +10,7 @@ import SwiftUI
 struct DayCell: View {
     enum Content {
         case blank
-        case dayNumber(Int)
+        case dayNumber(Date)
     }
     
     let content: Content
@@ -25,8 +25,8 @@ struct DayCell: View {
                 case .blank:
                     // empty square to preserve grid alignment
                     EmptyView()
-                case .dayNumber(let n):
-                    Text("\(n)")
+                case .dayNumber(let date):
+                    Text(date.formatted(.dateTime.day()))
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(.primary)
             }
@@ -42,11 +42,11 @@ struct DayCell: View {
     private var accessibilityLabel: Text {
         switch content {
             case .blank: return Text("Empty")
-            case .dayNumber(let n): return Text("Day \(n)")
+            case .dayNumber(let date): return Text("Day \(date.formatted(.dateTime.day()))")
         }
     }
 }
 
 #Preview {
-    DayCell(content: .dayNumber(24))
+    DayCell(content: .dayNumber(Date.now))
 }

@@ -19,17 +19,7 @@ struct EntryView: View {
                     NavigationLink {
                         EntryDetail(entry: entry)
                     } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(entry.title)
-                                .font(.headline)
-                            Text(entry.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text(entry.content)
-                                .font(.subheadline)
-                                .lineLimit(1)
-                                .foregroundStyle(.secondary)
-                        }
+                        EntryRow(entry: entry)
                     }
                 }
                 .onDelete(perform: deleteItems)
