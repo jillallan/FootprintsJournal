@@ -53,8 +53,8 @@ struct PersistenceControllerTests {
     @Test func savingLVisits_IncrementsVisitsByOne() async throws {
 
         let visit = Visit(
-            startDate: Date.now,
-            endDate: Date.now.addingTimeInterval(600),
+                        arrivalDate: Date.now,
+                        departureDate: Date.now.addingTimeInterval(600),
             latitude: 10.0,
             longitude: 10.0
         )

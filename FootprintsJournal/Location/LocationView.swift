@@ -13,7 +13,7 @@ struct LocationView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var locations: [Location]
     
-    @Environment(LocationService.self) private var locationService
+//    @Environment(LocationService.self) private var locationService
     
 //    @State var locationService: LocationService? = nil
     
@@ -21,7 +21,7 @@ struct LocationView: View {
         NavigationStack {
             List {
                 ForEach(locations) { location in
-                    LocationRowView(location: location)
+                    LocationRow(location: location.location)
                 }
             }
             .navigationTitle("Locations")
@@ -37,13 +37,6 @@ struct LocationView: View {
                     }
                 }
             }
-//            .onAppear {
-//                
-//                let locationRepository = PersistenceController(
-//                    modelContext: modelContext
-//                )
-//                locationService = LocationService(persister: locationRepository)
-//            }
         }
     }
     
@@ -57,8 +50,7 @@ struct LocationView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .modifier(SampleData())) {
     LocationView()
-        
 }
 

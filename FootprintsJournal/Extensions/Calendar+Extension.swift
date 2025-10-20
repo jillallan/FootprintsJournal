@@ -25,6 +25,12 @@ extension Calendar {
         return self.date(from: components)!
     }
     
+    /// Adds month offset to the start-of-month anchor.
+    func month(byAdding months: Int, toMonthOf date: Date) -> Date {
+        let start = startOfMonth(for: date)
+        return self.date(byAdding: .month, value: months, to: start)!
+    }
+    
     /// Returns the week number for a date, assuming the week starts on Monday
     func weekNumber(for date: Date) -> Int {
         var calendar = self
@@ -53,3 +59,23 @@ extension Calendar {
     }
 }
 
+extension Calendar {
+    func isDate(_ date: Date, withinMonths months: Int, of upper: Date) -> Bool {
+        let startDate = startOfMonth(for: date)
+        let startUpper = startOfMonth(for: upper)
+        let diff = dateComponents([.month], from: startDate, to: startUpper).month
+        guard let m = diff else { return false }
+        return (0...months).contains(m)
+    }
+    
+    /// Returns true if `date` is within `months` months after (or equal to) the lower bound month.
+    /// Symmetric to `isDate(_:withinMonths:of:)` which checks against an upper bound.
+    func isDate(_ date: Date, withinMonths months: Int, from lower: Date) -> Bool {
+        let startLower = startOfMonth(for: lower)
+        let startDate = startOfMonth(for: date)
+        let diff = dateComponents([.month], from: startLower, to: startDate).month
+        guard let m = diff else { return false }
+        return (0...months).contains(m)
+    }
+   
+}

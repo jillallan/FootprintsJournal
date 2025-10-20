@@ -11,8 +11,8 @@ import SwiftData
 
 @Model
 class Visit: CustomDebugStringConvertible {
-    var startDate: Date
-    var endDate: Date
+    var arrivalDate: Date
+    var departureDate: Date?
     var latitude: Double
     var longitude: Double
     
@@ -21,43 +21,39 @@ class Visit: CustomDebugStringConvertible {
     }
     
     var location: CLLocation {
-        CLLocation(latitude: latitude, longitude: longitude)
+        CLLocation(
+            coordinate: coordinate,
+            altitude: 0.0,
+            horizontalAccuracy: 0.0,
+            verticalAccuracy: 0.0,
+            timestamp: arrivalDate
+        )
     }
     
     var debugDescription: String {
         """
         Location:
-          startDate: \(startDate)
-          arrivalDate: \(endDate)
+          arrivalDate: \(arrivalDate)
+          departureDate: \(departureDate ?? Date.now)
           latitude: \(latitude)
           longitude: \(longitude)
         """
     }
     
-    init(startDate: Date, endDate: Date, latitude: Double, longitude: Double) {
-        self.startDate = startDate
-        self.endDate = endDate
+    init(arrivalDate: Date, departureDate: Date, latitude: Double, longitude: Double) {
+        self.arrivalDate = arrivalDate
+        self.departureDate = departureDate
         self.latitude = latitude
         self.longitude = longitude
     }
     
     convenience init(clVisit: CLVisit) {
         self.init(
-            startDate: clVisit.arrivalDate,
-            endDate: clVisit.departureDate,
+            arrivalDate: clVisit.arrivalDate,
+            departureDate: clVisit.departureDate,
             latitude: clVisit.coordinate.latitude,
             longitude: clVisit.coordinate.longitude
         )
     }
 }
 
-extension Visit {
-    static var preview: Visit {
-        Visit(
-            startDate: .distantPast,
-            endDate: .distantFuture,
-            latitude: 0.0,
-            longitude: 0.0
-        )
-    }
-}
