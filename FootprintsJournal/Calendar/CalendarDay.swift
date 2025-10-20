@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DayObject: Identifiable {
+struct CalendarDay: Identifiable {
     let id: Int
     let date: Date?
 }

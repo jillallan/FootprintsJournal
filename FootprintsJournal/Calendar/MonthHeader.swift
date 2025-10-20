@@ -8,27 +8,31 @@
 import SwiftUI
 
 struct MonthHeader: View {
-    let title: String
-    let weekdaySymbols: [String]
+    let date: Date
+    let namespace: Namespace.ID
     
     var body: some View {
-        VStack(spacing: 8) {
-            Text(title)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 8)
-            
-            // Weekday labels row, Mon → Sun
-            
-            WeekdayHeaders(weekdaySymbols: weekdaySymbols)
-//            Divider()
+        HStack {
+            Text(date, format: .dateTime.month(.wide).year())
+                .font(.title2)
+                .matchedGeometryEffect(id: date.id, in: namespace)
+    //            .padding(.top, 8)
+            Spacer()
         }
-        .padding(.horizontal, 4)
-        .padding(.bottom, 8)
+
+    }
+    
+    private func idForDate(_ date: Date) -> String {
+        String(date.timeIntervalSinceReferenceDate)
     }
 }
 
 
 #Preview {
-    MonthHeader(title: "July 2025", weekdaySymbols: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+    @Previewable @Namespace var namespace
+    
+    MonthHeader(
+        date: Date.now,
+        namespace: namespace
+    )
 }

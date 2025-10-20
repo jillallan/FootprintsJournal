@@ -9,6 +9,7 @@ import Foundation
 import Playgrounds
 
 extension Date {
+    
     var weekOfMonth: Int {
         var calendar = Calendar.current
         calendar.firstWeekday = 2
@@ -20,6 +21,10 @@ extension Date {
         calendar.firstWeekday = 2
         let systemWeekday = calendar.component(.weekday, from: self)
         return systemWeekday == 1 ? 7 : systemWeekday - 1
+    }
+    
+    var id: String {
+        String(self.timeIntervalSinceReferenceDate)
     }
 }
 

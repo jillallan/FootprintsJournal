@@ -13,7 +13,7 @@ struct MonthModel {
     let leadingBlanks: Int
     let trailingBlanks: Int
     let dates: [Date?]
-    let days: [DayObject]
+    let days: [CalendarDay]
     
     init(month: Date, calendar: Calendar) {
         let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
@@ -42,7 +42,7 @@ struct MonthModel {
         
         // After you've set `self.dates = ...`
         self.days = self.dates.enumerated().map { index, date in
-            DayObject(id: index, date: date) // date is Date? so nils are preserved
+            CalendarDay(id: index, date: date) // date is Date? so nils are preserved
         }
         
     }
@@ -50,7 +50,6 @@ struct MonthModel {
 
 #Playground {
     let month = MonthModel(month: Date(), calendar: .current)
-    month.dates
     
     month.dates.enumerated().forEach { index, date in
         print("\(index): \(String(describing: date))")

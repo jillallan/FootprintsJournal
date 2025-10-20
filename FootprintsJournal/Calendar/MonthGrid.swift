@@ -1,50 +1,64 @@
 //
-//  MonthGridNew.swift
+//  MonthGrid.swift
 //  FootprintsJournal
 //
-//  Created by Jill Allan on 15/09/2025.
+//  Created by Jill Allan on 28/09/2025.
 //
 
 import SwiftUI
 
 struct MonthGrid: View {
-    @Namespace var namespace
-    @Binding var selectedDate: Date?
-    let month: Date
+    @Binding var selectedDate: Date
+    @Binding var isShowingDayView: Bool
+    let month: CalendarMonth
     let calendar: Calendar
+    let dayNamespace: Namespace.ID
+    let monthNamespace: Namespace.ID
     
     private var columns: [GridItem] {
         Array(repeating: GridItem(.flexible(minimum: 24), spacing: 6), count: 7)
     }
     
     var body: some View {
-        let model = MonthModel(month: month, calendar: calendar)
-        
-        LazyVGrid(columns: columns, spacing: 6) {
-            ForEach(model.days) { day in
-                if let date = day.date {
-                    Button {
-                        selectedDate = date
-                    } label: {
-                        DayCell2(date: date)
+        VStack {
+            MonthHeader(
+                date: calendar.startOfMonth(for: month.date),
+                namespace: monthNamespace
+            )
+            LazyVGrid(columns: columns, spacing: 6) {
+                ForEach(month.days) { day in
+                    if let date = day.date {
+                        Button {
+                            withAnimation(.spring(duration: 0.5)) {
+                                selectedDate = date
+                                isShowingDayView = true
+                            }
+                        } label: {
+                            DayCell(
+                                date: date,
+                                namespace: dayNamespace
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        EmptyDayCell()
                     }
-                    .buttonStyle(.plain)
-                } else {
-                    EmptyDayCell()
                 }
             }
         }
     }
 }
 
-
 #Preview {
-    let calendar = Calendar.current
-    if let month = calendar.date(byAdding: .month, value: -2, to: Date.now) {
-        MonthGrid(
-            selectedDate: .constant(nil),
-            month: month,
-            calendar: calendar
-        )
-    }
+    @Previewable @Namespace var dayNamespace
+    @Previewable @Namespace var monthNamespace
+    
+    MonthGrid(
+        selectedDate: .constant(Date.now),
+        isShowingDayView: .constant(true),
+        month: CalendarMonth(date: Date.now, calendar: Calendar.current),
+        calendar: Calendar.current,
+        dayNamespace: dayNamespace,
+        monthNamespace: monthNamespace
+    )
 }

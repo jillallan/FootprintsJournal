@@ -2,51 +2,42 @@
 //  DayCell.swift
 //  FootprintsJournal
 //
-//  Created by Jill Allan on 15/09/2025.
+//  Created by Jill Allan on 19/09/2025.
 //
 
 import SwiftUI
 
 struct DayCell: View {
-    enum Content {
-        case blank
-        case dayNumber(Date)
-    }
     
-    let content: Content
+    let date: Date
+    let namespace: Namespace.ID
     
     var body: some View {
         ZStack {
             // subtle background to show the square bounds
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.thinMaterial.opacity(0.15))
+                .fill(Color(.systemBackground))
             
-            switch content {
-                case .blank:
-                    // empty square to preserve grid alignment
-                    EmptyView()
-                case .dayNumber(let date):
-                    Text(date.formatted(.dateTime.day()))
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.primary)
-            }
+            
+            Text(date, format: .dateTime.day())
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .matchedGeometryEffect(
+                    id: idForDate(date),
+                    in: namespace
+                )
+            
         }
         .aspectRatio(1, contentMode: .fit) // keep each cell square
-        .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(.secondary.opacity(0.2), lineWidth: 0.5)
-        )
-        .accessibilityLabel(accessibilityLabel)
     }
     
-    private var accessibilityLabel: Text {
-        switch content {
-            case .blank: return Text("Empty")
-            case .dayNumber(let date): return Text("Day \(date.formatted(.dateTime.day()))")
-        }
+    private func idForDate(_ date: Date) -> String {
+        String(date.timeIntervalSinceReferenceDate)
     }
 }
 
 #Preview {
-    DayCell(content: .dayNumber(Date.now))
+    @Previewable @Namespace var namespace
+    
+    DayCell(date: Date.now, namespace: namespace)
 }
